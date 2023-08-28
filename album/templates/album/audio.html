@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	{% load static %}
+	<meta charset="UTF-8">
+
+  	<link href="/static/css/audio.css" rel="stylesheet" type="text/css" />
+	<link rel="stylesheet" href="/static/lib/layui/css/layui.css">
+	<script type="text/javascript" src="/static/js/jquery.min.js"></script>
+	<script src="/static/lib/layui/layui.js" charset="utf-8"></script>
+	<title>选择音乐</title>
+</head>
+<body>
+ 
+<div>
+	{% csrf_token %}
+
+	<div style="display: none">
+		<label for="img_ids"></label><input id="img_ids" value="{{img_ids}}">
+	</div>
+
+	<table class="layui-table" lay-filter="test" >
+		  <thead>
+				<tr>
+					  <th>选择</th>
+					  <th>点击试听</th>
+					  <th>背景音乐名称</th>
+				</tr>
+		  </thead>
+	  <tbody>
+			{% for key,value in audio_url_list.items %}
+				<tr>
+					  <td style="text-align: center">
+<!--						  <input type="radio" name = "test" class = "test" title="{{key}}" value = "">-->
+						  <button type="button" onclick="startmake(this)" value="{{key}}" style="display: inline-block;margin: 0 auto" class="layui-btn layui-btn-radius">
+							开始制作
+						  </button>
+					  </td>
+					  <td>
+						  <audio src="{{value}}" controls="controls"></audio>
+					  </td>
+					  <td>
+						  {{key}}
+					  </td>
+				 </tr>
+			{%endfor%}
+	  </tbody>
+</table>
+
+
+
+</div>
+ <script>
+	 	// var load_index;
+		var music_name=''
+		// $(document).ready(function(){
+		// 	$(".test").click(function(){//console.log($(this));
+		// 	  	var obj = document.getElementsByTagName("input");
+		// 		for(var i=0;i<obj.length;i++){
+		// 			if(obj[i].checked){
+		// 				music_name = obj[i].getAttribute('title');
+		// 				console.log(obj[i].getAttribute('title'));
+		// 			}
+		// 		}
+		// 	 });
+		// });
+
+
+		var audios = document.getElementsByTagName("audio");
+
+		// 暂停函数
+		function pauseAll() {
+		var self = this;
+		[].forEach.call(audios, function (i) {
+			// 将audios中其他的audio全部暂停
+			i !== self && i.pause();
+		})
+		}
+		// 给play事件绑定暂停函数
+		[].forEach.call(audios, function (i) {
+			i.addEventListener("play", pauseAll.bind(i));
+		})
+
+		//开始剪辑
+		function startmake(e){
+			var img_ids = document.getElementById('img_ids').value;
+			console.log("name:",e.value);
+			music_name = e.value;
+			console.log("img_ids", img_ids);
+			if (music_name==='')
+				alert("没有选择音乐！")
+			else {
+				load_index = layer.load(); //上传loading
+				var data = new FormData()
+				data.append("img_ids",img_ids);
+				data.append("music_name", music_name);
+				data.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+				$.ajax({
+						type:"POST",
+						url:'{% url "album:startmakevideo" %}',
+						processData: false,
+						contentType: false,
+						data:data,
+					success:function (res) {
+						layer.close(load_index);
+						if (res==='1'){
+							alert("制作成功！");
+						  	window.open("../allphoto","_self",'',true);
+						}
+						else{
+							alert("制作失败！");
+						}
+
+					}
+					});
+			}
+    }
+ </script>
+</body>
+</html>

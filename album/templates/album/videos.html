@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+    <link rel="stylesheet" href="/static/css/allPhoto.css">
+    <link rel="stylesheet" href="/static/css/videos.css">
+    <link rel="stylesheet" href="/static/lib/layui/css/layui.css">
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script src="/static/lib/layui/layui.js" charset="utf-8"></script>
+	<link href="/static/css/videostyle.css" rel="stylesheet" type="text/css" />
+<title>视频</title>
+</head>
+<body>
+	<div style="text-align: center;position: fixed;width: 100%;height: 54px;top: 0;z-index:99;background-color: #F1F1F1">
+        <div id="imgop" >
+            <form class="layui-form" method="POST" action="">
+                {% csrf_token %}
+                <span id="nums_tips">已经选中1个视频</span>
+
+                <button id="img_delete" onclick="delete_videos()" type="button" class="layui-btn layui-btn-radius layui-btn-danger">
+                    <i class="layui-icon">&#xe640;</i>删除</button>
+                <button id="img_download" onclick="downLoadVideos()" type="button" class="layui-btn layui-btn-radius layui-btn-normal">
+                    <i class="layui-icon">&#xe601;</i>下载</button>
+            </form>
+        </div>
+        <h1 style="line-height: 54px;margin: 0">视频</h1>
+        <hr class="divide-line"/>
+	</div>
+
+	<div id="LAY_demo3" style="margin-top: 60px;position: relative;">
+    {% csrf_token %}
+    {% for date_time,img_nums in data_dic.items%}
+        <div id="{{ date_time }}">
+
+        <p style="clear:both;margin: 5px 10px;" >{{ date_time }}</p>
+                <ul>
+                {% for num in img_nums %}
+                {% for key,value in img_dic.items %}
+                    <li style="list-style-type:none;display:inline-block">
+                        <label>
+                            {% if num == key %}
+                            <input style="margin: 10px 0" id="{{num}}" class="" type="checkbox" lay-skin="primary" >
+                        </label>
+
+                        <video style="width: 320px;height: 240px;" controls="controls" >
+                        <source src="{{ value }}" type="video/mp4">
+                        </video>
+
+                         {% for Num,video_name in VIDEOS.items %}
+                            {% if num == Num %}
+                        <p style="text-align: center">{{video_name}}</p>
+                            {% endif %}
+                         {% endfor %}
+                    </li>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+            </ul>
+        </div>{%empty%}
+        <h1>视频为空，快上传点视频吧~</h1>
+    {% endfor %}
+    </div>
+
+</body>
+<script>
+
+    var result = []
+    var urlList = []
+    // item selection
+    $('input').click(function () {
+
+        var video_id = this.id;
+        console.log("video_id:",video_id);
+        // var img_url = $(this).parent('label').siblings('video').children('source').attr('src');
+        // console.log(img_url)
+        if(result.indexOf(video_id)>-1)
+        {
+            var video_index = result.indexOf(video_id);
+            result.splice(video_index,1)
+        }
+        else
+        {
+            result.push(video_id);
+        }
+        console.log("result:",result)
+        counter();
+    });
+
+    // all item selection
+    // $('#cancel_selected').click(function () {
+    //     // console.log("...")
+    //     $('li').removeClass('selected');
+    //     // console.log(result);
+    //     // console.log(urlList);
+    //     result = [];
+    //     urlList = [];
+    //     counter();
+    //     // console.log(result);
+    //     // console.log(urlList);
+    // });
+
+    // number of selected items
+    function counter() {
+        var li_se = document.getElementById("nums_tips");
+        var length = result.length;
+        console.log(length);
+        li_se.innerHTML="已经选中"+length+"个视频";
+        var choose_op  = document.getElementById("imgop");
+
+        if(length!==0)
+            choose_op.style.display="block";
+        else
+            choose_op.style.display="none";
+    }
+
+     // 删除视频
+    function delete_videos(){
+        if (result.length===0)
+            alert("没有选中视频！")
+        else {
+            var flag = confirm("确认删除吗？");
+            if (flag===true){
+            var data = new FormData()
+            data.append("result",result)
+            data.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+            $.ajax({
+                    type:"POST",
+                    url:'{% url "album:deleteVideo" %}',
+                    processData: false,
+                    contentType: false,
+                    data:data,
+                success:function (res) {
+                    var res_str = JSON.parse(res)
+                    if(res_str===result.length){
+                        alert("成功删除"+result.length+"个视频!")
+                        location.reload();
+                    }
+                    else {
+                        alert("成功删除"+result.length+"个视频!");
+                    }
+                }
+                });
+             }
+            else{
+            }
+        }
+    }
+
+    // 下载
+    function downLoadVideos() {
+        console.log('result:',result)
+         if (result.length===0)
+            alert("没有选中视频！")
+         else {
+            var data = new FormData()
+            data.append("result",result)
+            data.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+            $.ajax({
+                    type:"POST",
+                    url:'{% url "album:downLoadVideos" %}',
+                    processData: false,
+                    contentType: false,
+                    data:data,
+                success:function (res) {
+                    console.log(res);
+                    result = JSON.parse(res);
+                    var zipList = [];
+                    zipList.push(result);
+                    zipList.forEach(url => {
+                        console.log(url);
+                      let a = document.createElement('a') // 创建a标签
+                      let e = document.createEvent('MouseEvents') // 创建鼠标事件对象
+                      e.initEvent('click', false, false) // 初始化事件对象
+                      a.href = url // 设置下载地址
+                      a.download = '' // 设置下载文件名
+                      a.dispatchEvent(e)
+                  })
+                    location.reload();
+                }
+                });
+        }
+    }
+</script>
+</html>

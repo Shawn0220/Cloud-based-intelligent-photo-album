@@ -1,0 +1,103 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	{% load static %}
+    <meta charset="UTF-8">
+    <title>搜索结果</title>
+    <link rel="stylesheet" href="/static/css/searchResult.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/css/photos.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/lib/layui/css/layui.css">
+    <link rel="stylesheet" href="/static/css/xadmin.css">
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script src="/static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/static/js/xadmin.js"></script>
+</head>
+<body>
+<div>
+	<div style="display: none">
+		<label for="img_ids"></label><input id="img_ids" value="{{img_ids}}">
+	</div>
+
+	<table class="layui-table" lay-filter="test" >
+		  <thead>
+				<tr>
+					  <th>相册</th>
+					  <th>名称</th>
+					  <th>属性</th>
+				</tr>
+		  </thead>
+	  <tbody>
+			{% for key,value in img_urls.items %}
+				<tr>
+					  <td>
+						  <form action='{% url "album:toalbum" %}' method="get" style="display: inline-block">
+							{% csrf_token %}
+								<div style="text-align:center">
+									<label>
+										<input name="img_tag" value="{{key}}" type="submit" style="display: none">
+										<img class="album_first_page" src="{{value}}" style="cursor:hand;object-fit: cover; margin: 0 20px"  alt=""/>
+									</label>
+								</div>
+						  </form>
+					  </td>
+					  <td>
+						  {{key}}
+					  </td>
+					  <td>
+						  分类
+					  </td>
+				</tr>
+			{%endfor%}
+	  		{% for key,value in people_img_urls.items %}
+						{% for facekey ,faceName in PEOPLE.items%}
+                        {%if facekey == key %}
+						<tr>
+						  <td>
+							  <form action='{% url "album:humantoalbum" %}' method="get" style="display: inline-block">
+								{% csrf_token %}
+									<div style="text-align:center">
+										<label>
+											<input name="img_tag" value="{{key}}" type="submit" style="display: none">
+											<input name="people_tag" value="{{faceName}}" style="display: none">
+											<img class="album_first_page" src="{{value}}" style="cursor:hand;object-fit: cover; margin: 0 20px"  alt=""/>
+										</label>
+									</div>
+							  </form>
+						  </td>
+						  <td>
+							  {{faceName}}
+						  </td>
+						  <td>
+							  人像
+						  </td>
+				 		</tr>
+						{%endif%}
+                        {%endfor%}
+			{%endfor%}
+	  		{% for key,value in address_img_urls.items %}
+				<tr>
+					  <td>
+						  <form action='{% url "album:addresstoalbum" %}' method="get" style="display: inline-block">
+							{% csrf_token %}
+								<div style="text-align:center">
+									<label>
+										<input name="img_tag" value="{{key}}" type="submit" style="display: none">
+										<img class="album_first_page" src="{{value}}" style="cursor:hand;object-fit: cover; margin: 0 20px"  alt=""/>
+									</label>
+								</div>
+						  </form>
+					  </td>
+					  <td>
+						  {{key}}
+					  </td>
+					  <td>
+						  地点
+					  </td>
+				</tr>
+			{%endfor%}
+	  </tbody>
+</table>
+
+</div>
+</body>
+</html>

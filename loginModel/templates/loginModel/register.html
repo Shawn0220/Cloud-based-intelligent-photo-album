@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/lib/layui/css/layui.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script src="/static/lib/layui/layui.js" charset="utf-8"></script>
+    <title>Register</title>
+</head>
+ 
+<body>
+    <section>
+        <!-- 背景颜色 -->
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="box">
+            <!-- 登录框 -->
+            <div class="container">
+                <div class="form">
+                    <h2>注册</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="inputBox">
+                            <label>
+                                <input id="username" type="text" placeholder="用户名">
+                            </label>
+                        </div>
+                        <div class="inputBox">
+                            <label>
+                                <input id="password" type="password" placeholder="密码（6-12位英文和数字组成）">
+                            </label>
+                        </div>
+						<div class="inputBox">
+                            <label>
+                                <input id="confirm" type="password" placeholder="确认密码">
+                            </label>
+                        </div>
+                        <div class="inputBox">
+                            <label>
+                                <input id="phone" type="text" placeholder="手机号码">
+                            </label>
+                        </div>
+                        <div class="inputBox">
+                            <button onclick="sub()" style="display:block;margin: 0 auto;width: 100px" type="button" class="layui-btn layui-btn-lg layui-btn-radius layui-btn-normal">提交</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+ <script>
+
+     //密码检验
+     function checkCode(pwdCode){
+        var reg = /^[A-Za-z0-9]+$/;
+        var reg2 = /^[\w]{6,12}$/i;
+        return (reg.test(pwdCode) && reg2.test(pwdCode));
+    }
+
+    //手机号检验
+     function  checkPhone(phonenum){
+         var reg3 = /^[1][3,4,5,7,8][0-9]{9}$/;
+         return (reg3.test(phonenum));
+     }
+
+     //提交注册信息
+     function sub(){
+         const username = $("#username");
+         const password = $("#password");
+         const confirm  = $("#confirm");
+         const phone = $("#phone");
+         console.log(username.val());
+         console.log(password.val());
+         console.log(confirm.val());
+         console.log(phone.val());
+         if(username.val()===''){
+             alert("用户名不能为空！");
+             username.focus();
+         }
+         else if(password.val()===''){
+             alert("密码不能为空！")
+             password.focus();
+         }
+         else if(confirm.val()===''){
+             alert("确认密码不能为空！")
+             confirm.focus();
+         }
+         else if(phone.val()===''){
+             alert("手机号不能为空！")
+             phone.focus();
+         }
+         else if(password.val()!==confirm.val()){
+             alert("两次密码输入不一致！")
+             password.val('');
+             confirm.val('');
+             password.focus();
+         }
+         else if(!checkCode(password.val())){
+             alert("密码格式不正确！应为6-12位英文和数字组成！")
+             password.val('');
+             confirm.val('');
+             password.focus();
+         }
+         else if (phone.val().length !== 11) {
+            alert('电话号码不足11位');
+            phone.val("");
+            phone.focus();
+         }
+         else if(!checkPhone(phone.val())){
+             alert("手机号格式不正确！")
+             phone.val("");
+             phone.focus();
+         }
+         else{
+             var formdata = new FormData();
+             formdata.append("username",username.val());
+             formdata.append("password",password.val());
+             formdata.append("confirm",confirm.val());
+             formdata.append("phone",phone.val());
+             formdata.append("csrfmiddlewaretoken",$("[name='csrfmiddlewaretoken']").val());
+
+             $.ajax({
+                    type:"POST",
+                    url:'{% url "loginModel:registerIdentify" %}',
+                    processData: false,
+                    contentType: false,
+                    data:formdata,
+                success:function (res) {
+                    var result = JSON.parse(res)
+                    if(result===0){
+                        alert("注册成功");
+                        //关闭窗口
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index);
+                    }
+                    else if(result===1){
+                        alert("该手机号已注册");
+                        console.log(result);
+                    }
+                     else if(result===2){
+                        alert("该用户名已注册");
+                        console.log(result);
+                    }
+                    }
+                });
+         }
+     }
+
+ </script>
+</html>

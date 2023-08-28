@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="">
+<head>
+        {% load static %}
+	    <meta charset="UTF-8">
+        <title>{{img_tag}}</title>
+        <link rel="stylesheet" href="/static/css/allPhoto.css">
+        <link rel="stylesheet" href="/static/lib/layui/css/layui.css">
+        <link rel="stylesheet" href="/static/css/selectstyle.css" />
+        <script type="text/javascript" src="/static/js/allPhoto.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+        <script src="/static/lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="/static/js/xadmin.js"></script>
+        <link rel="stylesheet" href="/static/css/xadmin.css">
+</head>
+<body>
+	<div style="text-align: center;position: fixed;width: 100%;height: 54px;top: 0;z-index:99;background-color: #F1F1F1">
+        <div id="imgop" >
+            <form class="layui-form" method="POST" action="">
+                {% csrf_token %}
+                <span id="nums_tips">已经选中1张照片</span>
+                <button id="cancel_selected" onclick="" type="button" class="layui-btn layui-btn-radius">
+                    <i class="layui-icon">&#xe616;</i>取消全选</button>
+
+                <button id="make_video" onclick="makevideos()" type="button" class="layui-btn layui-btn-radius">
+                    <i class="layui-icon">&#xe6ed;</i>自动化剪辑</button>
+                <button id="img_detail" onclick="detimgcontent()" type="button" class="layui-btn layui-btn-radius layui-btn-warm">
+                    <i class="layui-icon">&#xe634;</i>查看详情</button>
+                <button id="img_delete" onclick="delete_img()" type="button" class="layui-btn layui-btn-radius layui-btn-danger">
+                    <i class="layui-icon">&#xe640;</i>删除</button>
+                <button id="img_download" onclick="downLoadImg()" type="button" class="layui-btn layui-btn-radius layui-btn-normal">
+                    <i class="layui-icon">&#xe601;</i>下载</button>
+            </form>
+        </div>
+		<h1 style="line-height: 54px">{{img_tag}}</h1>
+        <hr/>
+	</div>
+
+    <div id="LAY_demo3" style="margin-top: 60px;position: relative;">
+    {% csrf_token %}
+    {% for date_time,img_nums in data_dic.items%}
+        <div id="{{ date_time }}">
+        <p style="clear:both;margin: 5px 10px;" >{{ date_time }}</p>
+            <ul>
+        {% for num in img_nums %}
+            {% for key,value in img_dic.items %}
+                {% if num == key %}
+
+                     <li id="{{num}}" style="margin:10px"><img  src="" lay-src="{{ value }}" alt="加载中..."></li>
+
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+          </ul>
+        </div>
+    {% endfor %}
+    </div>
+
+</body>
+<script src="/static/js/index.js"></script>
+<script>
+    var result = []
+    var urlList = []
+
+
+    //查看详情
+    function detimgcontent(){
+        console.log(urlList);
+        if (urlList.length===0)
+            alert("没有选中照片！")
+        else {
+            var data = new FormData()
+            data.append("result",result)
+            data.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+            $.ajax({
+                    type:"POST",
+                    url:'{% url "album:imgdetails" %}',
+                    processData: false,
+                    contentType: false,
+                    data:data,
+                success:function (res) {
+                    var res_str = JSON.parse(res)
+                    xadmin.open('照片详情','../intoimgdetails?res_str='+res_str,'','',true)
+                }
+                });
+        }
+    }
+
+    // item selection
+    $('li').click(function () {
+        //切换状态
+        $(this).toggleClass('selected');
+        console.log("this.id:",this.id);
+        var img_url = $(this).children('img').attr('src');
+        var img_id = this.id;
+
+        //对于选中的取消选中
+        if ($(this).attr('class') !== '')
+        {
+            console.log("$(this).attr('class')",$(this).attr('class'));
+            result.push(img_id);
+            urlList.push(img_url);
+        }
+        else
+        {
+            result.splice(result.indexOf(img_id),1);
+            urlList.splice(urlList.indexOf(img_url),1);
+        }
+        // console.log(result);
+        // console.log(urlList);
+        counter();
+    });
+
+    // all item selection
+    $('#cancel_selected').click(function () {
+        // console.log("...")
+        $('li').removeClass('selected');
+        // console.log(result);
+        // console.log(urlList);
+        result = [];
+        urlList = [];
+        counter();
+        // console.log(result);
+        // console.log(urlList);
+    });
+
+    // number of selected items
+    function counter() {
+        var li_se = document.getElementById("nums_tips");
+        var length = $('li.selected').length;
+        console.log(length);
+        li_se.innerHTML="已经选中"+length+"张照片";
+        var choose_op  = document.getElementById("imgop");
+
+        if(length!==0)
+            choose_op.style.display="block";
+        else
+            choose_op.style.display="none";
+    }
+
+   // 删除图片
+    function delete_img(){
+        if (result.length===0)
+            alert("没有选中照片！")
+        else {
+            var flag = confirm("确认删除吗？");
+            if (flag===true){
+                var data = new FormData()
+                data.append("result",result)
+                data.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+                $.ajax({
+                        type:"POST",
+                        url:'{% url "album:deleteImg" %}',
+                        processData: false,
+                        contentType: false,
+                        data:data,
+                    success:function (res) {
+                        var res_str = JSON.parse(res)
+                        if(res_str===result.length){
+                            alert("成功删除"+result.length+"张照片！")
+                            location.reload();
+                        }
+                        else {
+                            alert("成功删除"+result.length+"张照片！");
+                        }
+                    }
+                    });
+            }
+            else{
+            }
+        }
+    }
+
+    // 下载
+    function downLoadImg() {
+        console.log('urlList:',urlList)
+         if (urlList.length===0)
+            alert("没有选中照片！")
+         else if (urlList.length===1) {
+             urlList.forEach(url => {
+                console.log(url);
+              let a = document.createElement('a'); // 创建a标签
+              let e = document.createEvent('MouseEvents');// 创建鼠标事件对象
+              e.initEvent('click', false, false); // 初始化事件对象
+              a.href = url; // 设置下载地址
+              a.download = ''; // 设置下载文件名
+              a.dispatchEvent(e);
+            })
+         }
+         else {
+            var data = new FormData()
+            data.append("result",urlList)
+            data.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+            $.ajax({
+                    type:"POST",
+                    url:'{% url "album:downLoadImgs" %}',
+                    processData: false,
+                    contentType: false,
+                    data:data,
+                success:function (res) {
+                    console.log(res);
+                    result = JSON.parse(res);
+                    var zipList = [];
+                    zipList.push(result);
+                    zipList.forEach(url => {
+                        console.log(url);
+                      let a = document.createElement('a') // 创建a标签
+                      let e = document.createEvent('MouseEvents') // 创建鼠标事件对象
+                      e.initEvent('click', false, false) // 初始化事件对象
+                      a.href = url // 设置下载地址
+                      a.download = '' // 设置下载文件名
+                      a.dispatchEvent(e);
+                      location.reload();
+                  })
+                }
+                });
+        }
+      //
+
+    }
+
+    //自动化剪辑
+    function makevideos(){
+        if (result.length===0)
+            alert("没有选中照片！")
+        else if(result.length<5)
+            alert("请选择大于等于5张照片！")
+        else {
+            var data = new FormData()
+            data.append("result",result)
+            data.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+            $.ajax({
+                    type:"POST",
+                    url:'{% url "album:selectaudio" %}',
+                    processData: false,
+                    contentType: false,
+                    data:data,
+                success:function (res) {
+                    console.log(res)
+                    window.open("../selectaudiopage?result="+result,"_self",'',true)
+                }
+                });
+        }
+    }
+
+    //懒加载
+    layui.use('flow', function(){
+        var flow = layui.flow;
+        //当你执行这样一个方法时，即对页面中的全部带有 lay-src 的 img 元素开启了懒加载（当然你也可以指定相关 img）
+        flow.lazyimg();
+    });
+</script>
+</html>

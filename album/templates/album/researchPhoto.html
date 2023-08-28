@@ -1,0 +1,157 @@
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>搜索照片</title>
+    <link rel="stylesheet" href="/static/css/researchPhoto.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/css/photos.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/lib/layui/css/layui.css">
+    <link rel="stylesheet" href="/static/css/xadmin.css">
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script src="/static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/static/js/xadmin.js"></script>
+</head>
+<body>
+<!--搜索框-->
+    <form class="layui-form" action="" method="post" style="margin: 10px 0;">
+        {% csrf_token %}
+        <div class="layui-form-item" style="margin: 0 10px;display: inline-block">
+            <label>
+                <input id="search_key" type="text" name="title"  placeholder="请输入关键词" autocomplete="off" class="layui-input" >
+            </label>
+        </div>
+        <button id="make_video" onclick="search_photo()" type="button" class="layui-btn layui-btn-radius">
+        <i class="layui-icon">&#xe615;</i>搜索</button>
+    </form>
+<!--分类-->
+    <div>
+        <p class="album_title">分类</p>
+        <a class="more_photo" href="../photos"><i class="layui-icon">&#xe602;</i>更多</a>
+    </div>
+<div>
+    {% for img_name,img_url in img_urls.items %}
+        <form action='{% url "album:toalbum" %}' method="get" style="display: inline-block">
+            {% csrf_token %}
+            <div style="display:inline-block;width:200px; height:150px; margin: 5px 10px" >
+                <div style="text-align:center">
+                    <label>
+                        <input value="" type="submit" style="display: none">
+                        <img class="image1" src="{{img_url}}" style="cursor:hand;object-fit: cover;margin: 0 20px;"  alt=""/>
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                            <input name="img_tag" style="text-align:center;width:100%;border: none ; background-color: transparent ; margin:5px 10px 0 10px"
+                                   value="{{img_name}}">
+                    </label>
+                </div>
+
+            </div>
+        </form>
+    {%empty%}
+        <h1>分类相册为空，快上传点照片吧~</h1>
+    {% endfor %}
+    </div>
+<!--人物-->
+    <div>
+        <p class="album_title">人物</p>
+        <a class="more_photo" href="../human"><i class="layui-icon">&#xe602;</i>更多</a>
+    </div>
+    <div>
+    {% for faceID,img_url in people_img_urls.items %}
+        <form action='{% url "album:humantoalbum" %}' method="get" style="display: inline-block">
+            {% csrf_token %}
+            <div style="display:inline-block;width:200px; height:150px; margin: 5px 10px" >
+                <div style="text-align:center">
+                    <label>
+                        <input value="" type="submit" style="display: none">
+                        <img class="image1" src="{{img_url}}" style="cursor:hand;object-fit: cover;margin: 0 20px;"  alt=""/>
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        {% for facekey ,faceName in PEOPLE.items%}
+                        {%if facekey == faceID %}
+                            <!--标记人脸id设置为none-->
+                            <input name="img_tag" style="display:none;text-align:center;width:100%;border: none ; background-color: transparent ; margin:5px 10px 0 10px"
+                                   value="{{faceID}}">
+                            <input name="people_tag" style="text-align:center;width:100%;border: none ; background-color: transparent ; margin:5px 10px 0 10px"
+                                   value="{{faceName}}">
+                        {%endif%}
+                        {%endfor%}
+                    </label>
+                </div>
+
+            </div>
+        </form>
+        {%empty%}
+        <h1>人物相册为空，快上传点照片吧~</h1>
+    {% endfor %}
+    </div>
+<!--地点-->
+   <div>
+        <p class="album_title">地点</p>
+        <a class="more_photo" href="../place"><i class="layui-icon">&#xe602;</i>更多</a>
+    </div>
+    <div>
+    {% for img_address,img_url in address_img_urls.items %}
+        <form action='{% url "album:addresstoalbum" %}' method="get" style="display: inline-block">
+            {% csrf_token %}
+            <div style="display:inline-block;width:200px; height:150px; margin: 5px 10px" >
+                <div style="text-align:center">
+                    <label>
+                        <input value="" type="submit" style="display: none">
+                        <img class="image1" src="{{img_url}}" style="cursor:hand;object-fit: cover;margin: 0 20px;"  alt=""/>
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                            <input name="img_tag" style="text-align:center;width:100%;border: none ; background-color: transparent ; margin:5px 10px 0 10px"
+                                   value="{{img_address}}">
+                    </label>
+                </div>
+
+            </div>
+        </form>
+        {%empty%}
+        <h1>地点相册为空，快上传点照片吧~</h1>
+    {% endfor %}
+    </div>
+</body>
+    <script>
+         //搜索
+    function search_photo(){
+        var keyword = $("#search_key").val();
+        console.log('keyword:',keyword);
+        if (keyword==='')
+            alert('搜索关键词不能为空！');
+        else {
+            var data = new FormData()
+            data.append("keyword",keyword)
+            data.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+            $.ajax({
+                    type:"POST",
+                    url:'{% url "album:searchPhotosByKey" %}',
+                    processData: false,
+                    contentType: false,
+                    data:data,
+                success:function (res) {
+                    var res_str = JSON.parse(res);
+                    console.log(res_str)
+                    if (res_str===0)
+                        alert("未找到包含关键字\""+keyword+"\"的照片！")
+                    else
+                    {
+                    console.log(res_str)
+                    xadmin.open('照片搜索结果','../PhotoSearchResult?keyword='+keyword,'','',true)
+                    }
+                }
+                });
+        }
+    }
+
+    </script>
+</html>

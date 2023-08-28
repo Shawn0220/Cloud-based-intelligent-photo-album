@@ -1,0 +1,48 @@
+
+	.effect-3{
+		border: 0; 
+		padding: 7px 0; 
+		border-bottom: 1px solid #ccc;
+	}
+	.effect-1 ~ .focus-border{
+		position: absolute; 
+		bottom: 0; 
+		left: 0; 
+		width: 0; 
+		height: 2px; 
+		background-color: #3399FF; 
+		transition: 0.4s;
+	}
+	.effect-1:focus ~ .focus-border{
+		width: 100%; 
+		transition: 0.4s;
+	}
+	.divLeft{
+        float:left;
+    }
+	.divCenter{
+		float:center;
+	}
+	
+	.parent{
+			width:600px;
+			height: 450px;
+			margin:100px auto; 
+			position: relative;
+			margin-right:45px;
+	}
+	.top{
+		text-align:center;
+    }
+    .bottom{
+        text-align:center;
+		height:10px;
+		margin-top:10px;
+    }
+
+    .image1{ 
+        margin-top: 25px; 
+        width:200px; 
+        height:200px; 
+    }
+ 

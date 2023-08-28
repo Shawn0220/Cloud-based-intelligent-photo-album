@@ -1,0 +1,40 @@
+#imgop{
+    background-color: #E8E4DE;
+    height: 54px;
+    width:100%;
+    position: absolute;
+    display: none;
+}
+#img_delete,
+#img_download,
+#img_detail,
+#make_video,
+#share_photo,
+#btn-group{
+    position: relative;
+    float: right;
+    text-align: center;
+    line-height: 38px;
+    margin: 8px;
+}
+
+#cancel_selected{
+    position: relative;
+    float: left;
+    text-align: center;
+    line-height: 38px;
+    margin: 8px;
+}
+#nums_tips{
+    position: relative;
+    text-align: center;
+    line-height: 54px;
+    color: #000000;
+    font-size: 20px;
+}
+.photo_item{
+   display: inline-block;
+
+}
+
+

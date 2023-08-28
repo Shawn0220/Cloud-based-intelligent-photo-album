@@ -1,0 +1,98 @@
+<!doctype html>
+<html  class="x-admin-sm" lang="en">
+<head>
+    {% load static %}
+	<meta charset="UTF-8">
+	<title>智慧云相册</title>
+	<meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <link rel="stylesheet" href="/static/css/font.css">
+    <link rel="stylesheet" href="/static/css/login.css">
+    <link rel="stylesheet" href="/static/css/xadmin.css">
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script src="/static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/static/js/xadmin.js"></script>
+
+    <!--[if lt IE 9]>
+      <script src="/static/js/html5.min.js"></script>
+      <script src="/static/js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body class="login-bg">
+    
+        <div class="login layui-anim layui-anim-up">
+            <div class="message">智慧云相册</div>
+        <div id="darkbannerwrap"></div>
+        
+        <form class="layui-form" method="post" action="">
+            {% csrf_token %}
+            <input id="username" name="username" placeholder="用户名"  type="text" lay-verify="required" class="layui-input" >
+            <hr class="hr15">
+            <input id="password" name="password" lay-verify="required" placeholder="密码"  type="password" class="layui-input">
+            <hr class="hr15">
+            <input value="登        录" lay-submit lay-filter="login" style="width:100%;" type="submit" class="layui-btn layui-btn-lg layui-btn-normal">
+            <hr class="hr20" >
+        </form>
+        <div>
+            <div style="float:left;">
+                <button id="forget" type="button" class="layui-btn layui-btn-normal"
+                        onclick="xadmin.open('忘记密码','../../../../loginModel/loginModel/resetpassword')">忘记密码</button>
+            </div>
+            <div style="float:right;">
+                <button id="register" type="button" class="layui-btn layui-btn-normal"
+                        onclick="xadmin.open('立即注册','../../../../loginModel/loginModel/register')">立即注册</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        layui.use('form', function(){
+          var form = layui.form;
+          var $ = layui.jquery;
+          //监听提交
+          form.on('submit(login)', function(data){
+
+            var username = $("#username").val();
+            var password = $("#password").val();
+
+            if (password===""){
+                alert("密码不能为空")
+                 return false;
+            }else if (username === ""){
+                alert("账号不能为空")
+                 return false;
+            }
+
+            console.log(username)
+            console.log(password)
+            var formdata = new FormData();
+
+            formdata.append("password", password);
+            formdata.append("username", username);
+            formdata.append("csrfmiddlewaretoken",$("[name='csrfmiddlewaretoken']").val());
+
+                $.ajax({
+                    type:"POST",
+                    url:'{% url "loginModel:identify" %}',
+                    processData: false,
+                    contentType: false,
+                    data:formdata,
+                success:function (res) {
+                    var result = JSON.parse(res)
+                    if(result==="yes"){
+                        window.location.href="../../../album/album/index"
+                    }
+                    else {
+                        alert(result)
+                        console.log(result)
+                    }
+                }
+                });
+            return false;
+          });
+        });
+    </script>
+</body>
+</html>

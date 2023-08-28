@@ -1,0 +1,38 @@
+.span-style{
+  margin-left:20px;
+  border:none;
+}
+label{
+  position: absolute;
+  display: inline-block;
+  border: 1px solid #2c2c2c;
+  width:13px;
+  height:13px;
+  border-radius: 3px;
+  margin-top:20px;
+}
+label input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            outline: none;
+            margin: 0;
+        }
+label input[type="radio"]:after {
+  display: inline-block;
+  position: absolute;
+  content:"";
+  background-color: transparent;
+}
+ label input[type="radio"]:checked:after {
+  //content:"\2714";
+  //text-align: center;
+  font-weight:bold;
+  font-size:13px;
+  font-family:Sans-serif;
+  background: transparent;
+  top: -3px;
+  left: 3px;
+  content:"L";
+  transform:matrix(-0.766044,-0.642788,-0.642788,0.766044,0,0);
+    -webkit-transform:matrix(-0.766044,-0.642788,-0.642788,0.766044,0,0);
+}

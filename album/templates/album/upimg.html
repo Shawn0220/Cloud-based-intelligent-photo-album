@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/static/lib/layui/css/layui.css"  media="all">
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+    {% csrf_token %}
+
+    <div class="layui-upload">
+        <button type="button" class="layui-btn layui-btn-normal"  id="test2">照片上传</button>
+        <button type="button" class="layui-btn layui-btn-normal"  id="upload">上传</button>
+
+        <hr>
+        <div class="layui-progress layui-progress-big" lay-showpercent="true" lay-filter="demo">
+          <div class="layui-progress-bar layui-bg-red" lay-percent="0%"></div>
+        </div>
+
+        <blockquote class="layui-elem-quote layui-quote-nm" style="margin-top: 10px;">预览图：
+            <div class="layui-upload-list" id="demo2"></div>
+        </blockquote>
+    </div>
+
+<script src="/static/lib/layui/layui.js" charset="utf-8"></script>
+<script>
+    var load_index;
+    layui.use(['upload', 'element', 'layer'], function() {
+        var $ = layui.jquery
+            , upload = layui.upload
+            , element = layui.element
+            , layer = layui.layer;
+
+        var count = 0;
+        var now = 0;
+        //多图片上传
+        upload.render({
+            elem: '#test2'
+            , url: '{% url "album:upload" %}' //改成您自己的上传接口
+            , multiple: true
+            , acceptMime :'image/*'
+            , accept : 'image'
+            , auto : false
+            , bindAction: '#upload'
+            , data:{ //需要上传这个data，不然程序也会报错
+            'csrfmiddlewaretoken':function(){
+                return $(':input:first').val()
+                }
+            }
+            ,before: function(obj){ //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+                load_index = layer.load(); //上传loading
+            }
+            , choose: function(obj){
+            //将每次选择的文件追加到文件队列
+            //预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
+                var loading_index = layer.load(); //上传loading
+                count=0;
+                obj.preview(function(index, file, result){
+                    count++;
+                    $('#demo2').append('<img src="' + result + '" alt="' + file.name + '" style="width:200px;margin: 10px">')
+                });
+                layer.close(loading_index);
+            }
+            , done: function (res) {
+                now++;
+                var result = now / count * 100;
+                result = result.toFixed(2)
+                result = result + '%';
+                element.progress('demo', result);
+                console.log('now:'+now);
+                console.log('count:'+count);
+                console.log('res.code:'+res.code);
+
+            },allDone: function(obj){ //当文件全部被提交后，才触发
+                layer.close(load_index);
+                console.log(obj.total); //得到总文件数
+                console.log(obj.successful); //请求成功的文件数
+                console.log(obj.aborted); //请求失败的文件数
+                setTimeout(function (){
+                    alert("上传成功！");
+                     //关闭窗口
+                    var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index);
+                }, 400);
+
+            }
+
+        });
+
+    })
+
+</script>
+
+</body>
+</html>

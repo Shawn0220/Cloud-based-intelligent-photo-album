@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/css/allPhoto.css">
+    <link rel="stylesheet" href="/static/lib/layui/css/layui.css">
+    <link rel="stylesheet" href="/static/css/selectstyle.css" />
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/js/allPhoto.js"></script>
+    <script src="/static/lib/layui/layui.js" charset="utf-8"></script>
+</head>
+<body>
+
+      <div class="layui-carousel" id="test10" lay-filter="carofilter" style="margin: 0 auto;width: 100%;text-align: center">
+        <div carousel-item="" >
+            {% for i in imgurlList%}
+                <img src="{{i}}" alt="" style="width: 100% ;height: auto;margin: 0 auto" class="pic">
+            {%endfor%}
+        </div>
+      </div>
+
+</body>
+<script>
+
+  layui.use(['carousel', 'form'], function(){
+    var carousel = layui.carousel
+
+      const W = parseFloat($(window).width());
+      const H = parseFloat($(window).height());
+
+      var i = 0
+      var url = $(".pic")[i].src
+      var img = new Image();
+      img.src = url;
+      console.log("width:",img.width)
+      console.log("height:",img.height)
+
+      var sc_width = ''
+      var sc_height = ''
+      if(img.width>img.height){
+            var height = img.width/img.height*H
+            sc_width = W+'px'
+            sc_height = height + 'px'
+      }
+      else{
+            var width = img.width/img.height*H
+            sc_width = width+'px'
+            sc_height = H + 'px'
+      }
+
+      console.log("width:",sc_width)
+      console.log("height:",sc_height)
+    //图片轮播
+    ins = carousel.render({
+        elem: '#test10'
+        ,width: sc_width
+        ,height: sc_height
+        ,autoplay:false
+        ,anim:'fade'
+    });
+
+
+    carousel.on('change(carofilter)', function(obj){ //监听轮播
+        i = obj.index
+        var url = $(".pic")[i].src
+        var img = new Image();
+        img.src = url;
+        console.log("width:",img.width)
+        console.log("height:",img.height)
+
+        if(img.width>img.height){
+            var height = img.width/img.height*H
+            sc_width = W+'px'
+            sc_height = height + 'px'
+        }
+        else{
+                var width = img.width/img.height*H
+                sc_width = width+'px'
+                sc_height = H + 'px'
+        }
+        ins.reload({ //重置轮播
+            elem: '#test10'
+            ,width: sc_width
+            ,height: sc_height
+            ,autoplay:false
+            ,anim:'fade'
+            });
+        });
+
+
+    // var $ = layui.$, active = {
+    //   set: function(othis){
+    //     var THIS = 'layui-bg-normal'
+    //     ,key = othis.data('key')
+    //     ,options = {};
+    //
+    //     othis.css('background-color', '#5FB878').siblings().removeAttr('style');
+    //     options[key] = othis.data('value');
+    //     ins3.reload(options);
+    //   }
+    // };
+    //
+    // //监听开关
+    // form.on('switch(autoplay)', function(){
+    //   ins3.reload({
+    //     autoplay: this.checked
+    //   });
+    // });
+    //
+    // $('.demoSet').on('keyup', function(){
+    //   var value = this.value
+    //   ,options = {};
+    //   if(!/^\d+$/.test(value)) return;
+    //
+    //   options[this.name] = value;
+    //   ins3.reload(options);
+    // });
+    //
+    // //其它示例
+    // $('.demoTest .layui-btn').on('click', function(){
+    //   var othis = $(this), type = othis.data('type');
+    //   active[type] ? active[type].call(this, othis) : '';
+    // });
+  });
+
+</script>
+</html>
